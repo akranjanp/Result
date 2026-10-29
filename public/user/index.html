@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Result Display System</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="screen-orientation" content="landscape">
+  <meta name="x5-orientation" content="landscape">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#ff6584">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- Full App Container -->
+  <div id="appContainer" class="app-container">
+
+    <!-- ============================================== -->
+    <!-- SCREEN 1: CAPTCHA SCREEN                       -->
+    <!-- ============================================== -->
+    <div id="captchaScreen" class="screen screen-captcha active">
+      <!-- Top Right Exit 'X' Button -->
+      <button class="btn-exit-circle" id="btnExitCaptcha" title="Exit" aria-label="Exit">
+        <span class="x-mark">✕</span>
+      </button>
+
+      <div class="captcha-box">
+        <!-- Captcha row: Refresh button + Captcha text badge -->
+        <div class="captcha-badge-row">
+          <div class="captcha-refresh-wrapper" id="btnRefreshCaptcha" title="Refresh Captcha">
+            <svg class="refresh-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+            </svg>
+            <span class="refresh-label">Refresh</span>
+          </div>
+
+          <div class="captcha-display-badge" id="captchaTextBadge">
+            <span id="captchaCode">-----</span>
+          </div>
+        </div>
+
+        <!-- Input Box -->
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            id="captchaInput" 
+            placeholder="Enter Captcha..." 
+            autocomplete="off" 
+            autocorrect="off" 
+            autocapitalize="off" 
+            spellcheck="false"
+            maxlength="8"
+          />
+        </div>
+
+        <!-- Submit Button -->
+        <button class="btn-golden-submit" id="btnSubmitCaptcha">
+          SUBMIT
+        </button>
+
+        <!-- Feedback message -->
+        <div id="captchaMsg" class="captcha-msg"></div>
+
+        <!-- Version Footer -->
+        <div class="version-label" id="versionLabel">Version-1.0</div>
+      </div>
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- SCREEN 2: MAIN LIVE RESULTS SCREEN             -->
+    <!-- ============================================== -->
+    <div id="liveScreen" class="screen screen-live">
+      <!-- Top Header Row -->
+      <div class="live-header-bar">
+        <button class="btn-action-teal" id="btnRefreshLive">REFRESH</button>
+
+        <div class="date-display-badge" id="liveDateBadge">
+          <span id="currentDateText">26-10-2026</span>
+        </div>
+
+        <button class="btn-action-teal" id="btnOpenAllResults">ALL RESULT</button>
+
+        <!-- Top Right Exit 'X' Button -->
+        <button class="btn-exit-circle btn-exit-live" id="btnExitLive" title="Exit to Captcha">
+          <span class="x-mark">✕</span>
+        </button>
+      </div>
+
+      <!-- Closed / Outside Hours Notice -->
+      <div id="closedNotice" class="closed-notice" style="display: none;">
+        <div class="closed-box">
+          <h3>OFFLINE</h3>
+          <p>Results available only between 08:30 AM and 11:00 PM</p>
+          <span class="closed-sub">Service will resume at 08:30 AM</span>
+        </div>
+      </div>
+
+      <!-- 4 Live Result Cards (2x2 Grid) -->
+      <div id="resultsGrid" class="results-grid">
+        <!-- Card 1 -->
+        <div class="result-card" id="card1">
+          <div class="card-compartment card-time" id="cardTime1">11:00</div>
+          <div class="card-divider"></div>
+          <div class="card-compartment card-code" id="cardCode1">R$R--</div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="result-card" id="card2">
+          <div class="card-compartment card-time" id="cardTime2">11:00</div>
+          <div class="card-divider"></div>
+          <div class="card-compartment card-code" id="cardCode2">C$H--</div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="result-card" id="card3">
+          <div class="card-compartment card-time" id="cardTime3">11:00</div>
+          <div class="card-divider"></div>
+          <div class="card-compartment card-code" id="cardCode3">N$V--</div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="result-card" id="card4">
+          <div class="card-compartment card-time" id="cardTime4">11:00</div>
+          <div class="card-divider"></div>
+          <div class="card-compartment card-code" id="cardCode4">R$Y--</div>
+        </div>
+      </div>
+
+      <!-- Live indicator pill at bottom -->
+      <div class="live-status-bar">
+        <span class="live-dot"></span>
+        <span id="liveStatusText">Live Sync Connected</span>
+        <span class="last-sync-time" id="lastSyncTime"></span>
+      </div>
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- SCREEN 3: ALL RESULTS MODAL                    -->
+    <!-- ============================================== -->
+    <div id="allResultsModal" class="screen screen-all-results">
+      <!-- Modal Top Bar -->
+      <div class="all-results-top-bar">
+        <div class="modal-date-box">
+          Date: <span id="modalDateText">26-10-2026</span>
+        </div>
+        <button class="btn-red-close" id="btnCloseAllResults">Close</button>
+      </div>
+
+      <!-- Table Container -->
+      <div class="table-outer-wrapper">
+        <table class="results-table" id="allResultsTable">
+          <thead>
+            <!-- Top Header Section -->
+            <tr class="header-row-group">
+              <th class="col-event-code" id="thEventCode">Gift Event Code</th>
+              <th class="col-yantra-group" colspan="4" id="thYantraGroup">YANTRA GROUP</th>
+            </tr>
+          </thead>
+          <tbody id="allResultsTableBody">
+            <!-- Dynamically populated 59 slots -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

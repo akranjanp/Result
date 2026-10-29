@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # -------------------------------------------------------------
+  # PostgreSQL 16 Enterprise Database
+  # -------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: result_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: result_db
+      POSTGRES_USER: result_user
+      POSTGRES_PASSWORD: result_password_secure_2026
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U result_user -d result_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - result_network
+
+  # -------------------------------------------------------------
+  # Application Server (Node.js + REST API + SSE + Web Frontend)
+  # -------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: result_app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgres://result_user:result_password_secure_2026@postgres:5432/result_db
+      ADMIN_JWT_SECRET: super_secure_admin_jwt_secret_change_me_2026
+      CAPTCHA_SECRET: super_secure_captcha_secret_change_me_2026
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - result_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  result_network:
+    driver: bridge

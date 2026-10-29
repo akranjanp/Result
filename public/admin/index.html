@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Result Publishing System</title>
+  <link rel="stylesheet" href="/admin/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ============================================== -->
+  <!-- LOGIN VIEW                                     -->
+  <!-- ============================================== -->
+  <div id="loginView" class="admin-view active">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-icon">🔒</div>
+        <h2>Admin Portal</h2>
+        <p>Result Publishing & Management System</p>
+      </div>
+
+      <form id="loginForm" autocomplete="off">
+        <div class="form-group">
+          <label for="usernameInput">Username</label>
+          <input 
+            type="text" 
+            id="usernameInput" 
+            placeholder="Enter admin username" 
+            required 
+            autofocus
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="passwordInput">Password</label>
+          <input 
+            type="password" 
+            id="passwordInput" 
+            placeholder="Enter password" 
+            required 
+          />
+        </div>
+
+        <div id="loginError" class="alert-error" style="display: none;"></div>
+
+        <button type="submit" class="btn-primary" id="btnLoginSubmit">
+          Log In to Dashboard
+        </button>
+      </form>
+
+      <div class="login-footer">
+        <span class="badge-hint">Default: admin / admin123</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================== -->
+  <!-- DASHBOARD VIEW                                 -->
+  <!-- ============================================== -->
+  <div id="dashboardView" class="admin-view">
+    <!-- Top Navigation Bar -->
+    <header class="admin-header">
+      <div class="header-left">
+        <div class="brand-badge">⚡ RESULT ADMIN</div>
+        <div class="live-clock-badge">
+          <span class="clock-icon">🕒</span>
+          <span id="headerLiveTime">11:00</span>
+          <span class="slot-badge" id="headerActiveSlotBadge">Slot: 11:00</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <a href="/" target="_blank" class="btn-outline" title="Open user display view">
+          📱 Preview User App ↗
+        </a>
+        <button class="btn-outline" id="btnOpenSettings">⚙️ Settings</button>
+        <button class="btn-logout" id="btnLogout">Sign Out</button>
+      </div>
+    </header>
+
+    <!-- Main Dashboard Content -->
+    <main class="dashboard-content">
+
+      <!-- Alert Notification Banner -->
+      <div id="alertBanner" class="alert-banner" style="display: none;"></div>
+
+      <!-- Grid Layout: Publisher Card on Left, Slot Schedule on Right -->
+      <div class="dashboard-grid">
+
+        <!-- ========================================== -->
+        <!-- LEFT COLUMN: QUICK RESULT PUBLISHER        -->
+        <!-- ========================================== -->
+        <section class="card publisher-card">
+          <div class="card-header">
+            <h3>⚡ Publish Result</h3>
+            <span class="tag-live">LIVE SYNC</span>
+          </div>
+
+          <div class="publisher-controls">
+            <!-- Date Picker -->
+            <div class="form-group">
+              <label for="publishDate">Date</label>
+              <input type="date" id="publishDate" class="input-control" />
+            </div>
+
+            <!-- Slot Picker -->
+            <div class="form-group">
+              <div class="label-row">
+                <label for="publishSlot">Time Slot (15-min gap)</label>
+                <button type="button" class="btn-text-link" id="btnSelectCurrentSlot">Use Active Slot</button>
+              </div>
+              <select id="publishSlot" class="input-control select-control">
+                <!-- 59 slots populated via JS -->
+              </select>
+            </div>
+          </div>
+
+          <!-- 4 Result Inputs with fixed prefixes -->
+          <div class="result-inputs-container">
+            <label class="section-label">Numerical Values (00-99):</label>
+            <div class="inputs-grid">
+              
+              <!-- Group 1 -->
+              <div class="slot-input-box">
+                <div class="prefix-badge" id="prefixBadge1">R$R</div>
+                <input 
+                  type="number" 
+                  id="numInput1" 
+                  class="number-input" 
+                  placeholder="00" 
+                  min="0" 
+                  max="99"
+                  maxlength="2"
+                  autocomplete="off"
+                />
+              </div>
+
+              <!-- Group 2 -->
+              <div class="slot-input-box">
+                <div class="prefix-badge" id="prefixBadge2">C$H</div>
+                <input 
+                  type="number" 
+                  id="numInput2" 
+                  class="number-input" 
+                  placeholder="00" 
+                  min="0" 
+                  max="99"
+                  maxlength="2"
+                  autocomplete="off"
+                />
+              </div>
+
+              <!-- Group 3 -->
+              <div class="slot-input-box">
+                <div class="prefix-badge" id="prefixBadge3">N$V</div>
+                <input 
+                  type="number" 
+                  id="numInput3" 
+                  class="number-input" 
+                  placeholder="00" 
+                  min="0" 
+                  max="99"
+                  maxlength="2"
+                  autocomplete="off"
+                />
+              </div>
+
+              <!-- Group 4 -->
+              <div class="slot-input-box">
+                <div class="prefix-badge" id="prefixBadge4">R$Y</div>
+                <input 
+                  type="number" 
+                  id="numInput4" 
+                  class="number-input" 
+                  placeholder="00" 
+                  min="0" 
+                  max="99"
+                  maxlength="2"
+                  autocomplete="off"
+                />
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="publisher-actions">
+            <button class="btn-publish" id="btnPublish">
+              🚀 Publish Live Result
+            </button>
+            <button class="btn-danger-outline" id="btnClearSlot">
+              Clear Slot
+            </button>
+          </div>
+
+          <!-- Quick Preview Badge -->
+          <div class="live-preview-box">
+            <span class="preview-title">Live Preview for App:</span>
+            <div class="preview-chips">
+              <span class="chip" id="chipPreview1">R$R--</span>
+              <span class="chip" id="chipPreview2">C$H--</span>
+              <span class="chip" id="chipPreview3">N$V--</span>
+              <span class="chip" id="chipPreview4">R$Y--</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- RIGHT COLUMN: 59-SLOT MATRIX SCHEDULE       -->
+        <!-- ========================================== -->
+        <section class="card schedule-card">
+          <div class="card-header">
+            <div>
+              <h3>Daily Slots Matrix (08:30 AM – 11:00 PM)</h3>
+              <p class="subtitle">Total 59 slots (15 min gap). Click any slot to edit.</p>
+            </div>
+            <div class="schedule-stats">
+              <span class="stat-badge stat-green" id="statPublishedCount">0 Published</span>
+              <span class="stat-badge stat-gray" id="statPendingCount">59 Pending</span>
+            </div>
+          </div>
+
+          <div class="schedule-table-wrapper">
+            <table class="schedule-table">
+              <thead>
+                <tr>
+                  <th>Slot</th>
+                  <th>Status</th>
+                  <th id="thAdminCol1">R$R</th>
+                  <th id="thAdminCol2">C$H</th>
+                  <th id="thAdminCol3">N$V</th>
+                  <th id="thAdminCol4">R$Y</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="scheduleTableBody">
+                <!-- Dynamically populated 59 slots -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+
+  <!-- ============================================== -->
+  <!-- SETTINGS MODAL                                 -->
+  <!-- ============================================== -->
+  <div id="settingsModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>System Settings</h3>
+        <button class="modal-close" id="btnCloseSettings">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- 4 Unique Alphabet Prefixes -->
+        <div class="settings-section">
+          <h4>Custom Alphabet Prefixes</h4>
+          <p class="section-desc">Change the 4 fixed prefixes (currently R$R, C$H, N$V, R$Y):</p>
+          <div class="prefixes-form-grid">
+            <div class="prefix-input-group">
+              <label>Prefix 1</label>
+              <input type="text" id="settingPrefix1" maxlength="5" class="input-control uppercase" />
+            </div>
+            <div class="prefix-input-group">
+              <label>Prefix 2</label>
+              <input type="text" id="settingPrefix2" maxlength="5" class="input-control uppercase" />
+            </div>
+            <div class="prefix-input-group">
+              <label>Prefix 3</label>
+              <input type="text" id="settingPrefix3" maxlength="5" class="input-control uppercase" />
+            </div>
+            <div class="prefix-input-group">
+              <label>Prefix 4</label>
+              <input type="text" id="settingPrefix4" maxlength="5" class="input-control uppercase" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Titles -->
+        <div class="settings-section">
+          <h4>Display Titles</h4>
+          <div class="form-group">
+            <label>Event Code Header Title</label>
+            <input type="text" id="settingEventTitle" class="input-control" />
+          </div>
+          <div class="form-group">
+            <label>Group Header Title</label>
+            <input type="text" id="settingGroupTitle" class="input-control" />
+          </div>
+        </div>
+
+        <!-- Operating Hours Restriction -->
+        <div class="settings-section">
+          <h4>Operating Hours Enforcement</h4>
+          <label class="toggle-label">
+            <input type="checkbox" id="settingEnforceHours" />
+            <span class="toggle-slider"></span>
+            <span class="toggle-text">Strict 08:30 AM – 11:00 PM (Turn OFF for 24h test mode)</span>
+          </label>
+        </div>
+
+        <!-- Change Password -->
+        <div class="settings-section">
+          <h4>Change Admin Password</h4>
+          <div class="form-group">
+            <label>Current Password</label>
+            <input type="password" id="settingCurrentPassword" class="input-control" />
+          </div>
+          <div class="form-group">
+            <label>New Password (min 6 chars)</label>
+            <input type="password" id="settingNewPassword" class="input-control" />
+          </div>
+          <button type="button" class="btn-outline" id="btnUpdatePassword">Update Password</button>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-outline" id="btnCancelSettings">Cancel</button>
+        <button type="button" class="btn-primary" id="btnSaveSettings">Save All Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+</body>
+</html>
