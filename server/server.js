@@ -28,7 +28,8 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon',
   '.woff2': 'font/woff2',
   '.woff': 'font/woff',
-  '.ttf': 'font/ttf'
+  '.ttf': 'font/ttf',
+  '.apk': 'application/vnd.android.package-archive'
 };
 
 // Set of connected SSE clients
@@ -571,6 +572,21 @@ const server = http.createServer(async (req, res) => {
   // -------------------------------------------------------------
   // STATIC FILE SERVING
   // -------------------------------------------------------------
+
+  // Download APK Endpoint
+  if (pathname === '/app.apk' || pathname === '/download/app.apk' || pathname === '/app-release.apk') {
+    const apkPath = path.join(PUBLIC_DIR, 'user', 'app.apk');
+    if (fs.existsSync(apkPath) && fs.statSync(apkPath).isFile()) {
+      const stats = fs.statSync(apkPath);
+      res.writeHead(200, {
+        'Content-Type': 'application/vnd.android.package-archive',
+        'Content-Length': stats.size,
+        'Content-Disposition': 'attachment; filename="ResultApp.apk"',
+        'Cache-Control': 'no-cache'
+      });
+      return fs.createReadStream(apkPath).pipe(res);
+    }
+  }
 
   // User App HTML
   if (pathname === '/' || pathname === '/user' || pathname === '/user/') {

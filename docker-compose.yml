@@ -41,6 +41,8 @@ services:
       DATABASE_URL: postgres://result_user:result_password_secure_2026@postgres:5432/result_db
       ADMIN_JWT_SECRET: super_secure_admin_jwt_secret_change_me_2026
       CAPTCHA_SECRET: super_secure_captcha_secret_change_me_2026
+    volumes:
+      - ./public:/app/public
     depends_on:
       postgres:
         condition: service_healthy
