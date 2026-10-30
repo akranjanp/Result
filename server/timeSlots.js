@@ -1,11 +1,42 @@
 // server/timeSlots.js
-// Generates and manages the 15-minute time slots between 08:30 AM and 11:00 PM (23:00)
+// Generates and manages the 15-minute time slots between 08:30 AM and 11:00 PM (23:00) IST
 
 const START_HOUR = 8;
 const START_MIN = 30;
 const END_HOUR = 23;
 const END_MIN = 0;
 const INTERVAL_MIN = 15;
+
+/**
+ * Extracts Indian Standard Time (IST, Asia/Kolkata) date and time parts regardless of server timezone
+ */
+function getISTParts(date = new Date()) {
+  const formatter = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+  const parts = {};
+  for (const { type, value } of formatter.formatToParts(date)) {
+    parts[type] = value;
+  }
+  return {
+    hours: parseInt(parts.hour, 10),
+    minutes: parseInt(parts.minute, 10),
+    seconds: parseInt(parts.second, 10),
+    day: parts.day,
+    month: parts.month,
+    year: parts.year,
+    displayDate: `${parts.day}-${parts.month}-${parts.year}`,
+    isoDate: `${parts.year}-${parts.month}-${parts.day}`,
+    timeStr: `${parts.hour}:${parts.minute}`
+  };
+}
 
 /**
  * Returns an array of formatted slot strings: ['08:30', '08:45', ..., '23:00']
@@ -38,20 +69,22 @@ function format12Hour(timeStr) {
 }
 
 /**
- * Checks if a given Date (or current time in IST/local) is within operating hours (08:30 - 23:00)
+ * Checks if a given Date is within operating hours (08:30 - 23:00 IST)
  */
 function isWithinOperatingHours(date = new Date()) {
-  const totalMin = date.getHours() * 60 + date.getMinutes();
+  const ist = getISTParts(date);
+  const totalMin = ist.hours * 60 + ist.minutes;
   const startMin = START_HOUR * 60 + START_MIN;
   const endMin = END_HOUR * 60 + END_MIN;
   return totalMin >= startMin && totalMin <= endMin;
 }
 
 /**
- * Returns the current active slot (e.g. at 11:05, returns '11:00'; at 08:32, returns '08:30')
+ * Returns the current active slot (e.g. at 11:05, returns '11:00'; at 08:32, returns '08:30') in IST
  */
 function getCurrentSlot(date = new Date()) {
-  const totalMin = date.getHours() * 60 + date.getMinutes();
+  const ist = getISTParts(date);
+  const totalMin = ist.hours * 60 + ist.minutes;
   const startMin = START_HOUR * 60 + START_MIN;
   const endMin = END_HOUR * 60 + END_MIN;
 
@@ -73,16 +106,13 @@ function getCurrentSlot(date = new Date()) {
 }
 
 /**
- * Returns formatted date string 'DD-MM-YYYY' and 'YYYY-MM-DD'
+ * Returns formatted date string 'DD-MM-YYYY' and 'YYYY-MM-DD' in IST
  */
 function getDateStrings(date = new Date()) {
-  const d = String(date.getDate()).padStart(2, '0');
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const y = date.getFullYear();
-
+  const ist = getISTParts(date);
   return {
-    display: `${d}-${m}-${y}`, // 26-10-2026 format matching screenshots
-    iso: `${y}-${m}-${d}`      // 2026-10-26 database format
+    display: ist.displayDate,
+    iso: ist.isoDate
   };
 }
 
@@ -91,5 +121,6 @@ module.exports = {
   format12Hour,
   isWithinOperatingHours,
   getCurrentSlot,
-  getDateStrings
+  getDateStrings,
+  getISTParts
 };

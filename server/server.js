@@ -168,6 +168,7 @@ const server = http.createServer(async (req, res) => {
   if (pathname === '/api/public/status' && method === 'GET') {
     const now = new Date();
     const dateInfo = timeSlots.getDateStrings(now);
+    const ist = timeSlots.getISTParts(now);
     const settings = await db.getAllSettings();
     const isOperatingHours = timeSlots.isWithinOperatingHours(now);
     const enforceHours = settings.enforce_operating_hours === '1';
@@ -178,7 +179,7 @@ const server = http.createServer(async (req, res) => {
       success: true,
       currentDate: dateInfo.display,
       currentDateIso: dateInfo.iso,
-      currentTime: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
+      currentTime: ist.timeStr,
       activeSlot,
       isOperatingHours,
       isOpen,

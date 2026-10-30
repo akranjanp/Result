@@ -4,8 +4,8 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
-# Install curl for docker healthcheck
-RUN apk add --no-cache curl
+# Install curl and tzdata for Indian Standard Time timezone support
+RUN apk add --no-cache curl tzdata
 
 # Copy package definitions and install production dependencies
 COPY package*.json ./
@@ -17,9 +17,10 @@ COPY . .
 # Expose HTTP port
 EXPOSE 3000
 
-# Set environment defaults
+# Set environment defaults (IST timezone)
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV TZ=Asia/Kolkata
 
 # Container healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \

@@ -12,6 +12,7 @@ services:
       POSTGRES_DB: result_db
       POSTGRES_USER: result_user
       POSTGRES_PASSWORD: result_password_secure_2026
+      TZ: Asia/Kolkata
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -38,11 +39,13 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+      TZ: Asia/Kolkata
       DATABASE_URL: postgres://result_user:result_password_secure_2026@postgres:5432/result_db
       ADMIN_JWT_SECRET: super_secure_admin_jwt_secret_change_me_2026
       CAPTCHA_SECRET: super_secure_captcha_secret_change_me_2026
     volumes:
       - ./public:/app/public
+      - ./server:/app/server
     depends_on:
       postgres:
         condition: service_healthy
