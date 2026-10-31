@@ -20,7 +20,7 @@ const defaultSettings = {
   yantra_group_title: 'YANTRA GROUP',
   event_code_title: 'Gift Event Code',
   enforce_operating_hours: '1',
-  app_version: 'Version-1.0'
+  app_version: 'Version-1.0.1'
 };
 
 if (isPostgres) {

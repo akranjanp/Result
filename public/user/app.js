@@ -166,7 +166,10 @@
         if (data.settings) {
           if (data.settings.groupTitle) thYantraGroup.textContent = data.settings.groupTitle;
           if (data.settings.eventTitle) thEventCode.textContent = data.settings.eventTitle;
-          if (data.settings.version) versionLabel.textContent = data.settings.version;
+          const versionText = document.getElementById('versionText');
+          if (versionText && data.settings.version) {
+            versionText.textContent = data.settings.version;
+          }
         }
       }
     } catch (e) {
