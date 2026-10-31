@@ -255,8 +255,9 @@ const server = http.createServer(async (req, res) => {
       result = await db.getResultBySlot(dateInfo.iso, activeSlot);
     }
 
-    if (!result) {
-      result = await db.getLatestResult(dateInfo.iso);
+    if (!result && activeSlot) {
+      // Look back only to latest completed slot <= activeSlot (never future slots)
+      result = await db.getLatestResult(dateInfo.iso, activeSlot);
     }
 
     const prefixes = [
@@ -300,7 +301,8 @@ const server = http.createServer(async (req, res) => {
 
   // Get All Results (All 59 slots in reverse chronological order)
   if (pathname === '/api/public/results' && method === 'GET') {
-    const requestedDateIso = parsedUrl.query.date || timeSlots.getDateStrings(new Date()).iso;
+    const now = new Date();
+    const requestedDateIso = parsedUrl.query.date || timeSlots.getDateStrings(now).iso;
     const settings = await db.getAllSettings();
     const prefixes = [
       settings.prefix_1 || 'R$R',
@@ -317,7 +319,10 @@ const server = http.createServer(async (req, res) => {
 
     const allSlots = timeSlots.getAllSlots().reverse();
     const rows = allSlots.map(slotTime => {
-      const item = storedMap.get(slotTime);
+      // Check if slot is strictly in the future for today's date
+      const isFuture = timeSlots.isFutureSlot(slotTime, requestedDateIso, now);
+      const item = !isFuture ? storedMap.get(slotTime) : null;
+
       if (item) {
         return {
           slotTime,
@@ -478,20 +483,25 @@ const server = http.createServer(async (req, res) => {
       await db.saveResult(date, slotTime, val1, val2, val3, val4);
 
       const settings = await db.getAllSettings();
-      broadcastSSE('result_updated', {
-        date,
-        slotTime,
-        r1: val1,
-        r2: val2,
-        r3: val3,
-        r4: val4,
-        prefixes: [
-          settings.prefix_1 || 'R$R',
-          settings.prefix_2 || 'C$H',
-          settings.prefix_3 || 'N$V',
-          settings.prefix_4 || 'R$Y'
-        ]
-      });
+      const isFuture = timeSlots.isFutureSlot(slotTime, date);
+
+      // Only broadcast full numbers to public clients if the slot has already arrived or is active
+      if (!isFuture) {
+        broadcastSSE('result_updated', {
+          date,
+          slotTime,
+          r1: val1,
+          r2: val2,
+          r3: val3,
+          r4: val4,
+          prefixes: [
+            settings.prefix_1 || 'R$R',
+            settings.prefix_2 || 'C$H',
+            settings.prefix_3 || 'N$V',
+            settings.prefix_4 || 'R$Y'
+          ]
+        });
+      }
 
       return sendJson(res, 200, {
         success: true,
@@ -643,6 +653,42 @@ db.initDb().then(() => {
     console.log(`User Frontend:  http://localhost:${PORT}/`);
     console.log(`Admin Panel:    http://localhost:${PORT}/admin/`);
     console.log(`====================================================`);
+
+    // Automatic 15-minute slot transition watcher
+    let lastActiveSlot = timeSlots.getCurrentSlot(new Date());
+    setInterval(async () => {
+      try {
+        const now = new Date();
+        const currentSlot = timeSlots.getCurrentSlot(now);
+        if (currentSlot && currentSlot !== lastActiveSlot) {
+          console.log(`[SLOT TRANSITION] Active slot changed from ${lastActiveSlot} to ${currentSlot}`);
+          lastActiveSlot = currentSlot;
+
+          const dateInfo = timeSlots.getDateStrings(now);
+          const declaredResult = await db.getResultBySlot(dateInfo.iso, currentSlot);
+          const settings = await db.getAllSettings();
+
+          broadcastSSE('slot_transition', {
+            date: dateInfo.display,
+            dateIso: dateInfo.iso,
+            slotTime: currentSlot,
+            hasDeclaredResult: !!declaredResult,
+            r1: declaredResult ? declaredResult.r1 : null,
+            r2: declaredResult ? declaredResult.r2 : null,
+            r3: declaredResult ? declaredResult.r3 : null,
+            r4: declaredResult ? declaredResult.r4 : null,
+            prefixes: [
+              settings.prefix_1 || 'R$R',
+              settings.prefix_2 || 'C$H',
+              settings.prefix_3 || 'N$V',
+              settings.prefix_4 || 'R$Y'
+            ]
+          });
+        }
+      } catch (e) {
+        console.error('Error in slot transition check:', e);
+      }
+    }, 5000);
   });
 }).catch(err => {
   console.error('[FATAL] Failed to initialize database:', err);

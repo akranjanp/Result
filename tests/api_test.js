@@ -140,6 +140,24 @@ async function runTests() {
     assert(slot11.c1 === 'R$R15' && slot11.c2 === 'C$H48' && slot11.c3 === 'N$V92' && slot11.c4 === 'R$Y30',
       'Slot 11:00 has exact numbers R$R15, C$H48, N$V92, R$Y30');
 
+    // 7b. Future Slot Protection Check (Pre-entered future slots must be concealed as '--')
+    await request('/api/admin/publish', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` }
+    }, {
+      date: todayIso,
+      slotTime: '22:45',
+      r1: '77',
+      r2: '88',
+      r3: '99',
+      r4: '00'
+    });
+    const allResAfterFuture = await request(`/api/public/results?date=${todayIso}`);
+    const slot2245 = allResAfterFuture.body.slots.find(s => s.slotTime === '22:45');
+    assert(slot2245 && !slot2245.isPublished, 'Future slot 22:45 is strictly NOT published in public view');
+    assert(slot2245.c1 === '--' && slot2245.c2 === '--' && slot2245.c3 === '--' && slot2245.c4 === '--',
+      'Future slot 22:45 numbers are concealed as --');
+
     // 8. Static Frontend Files Serving Check
     const userPage = await request('/');
     assert(userPage.status === 200 && userPage.headers['content-type'].includes('text/html'),

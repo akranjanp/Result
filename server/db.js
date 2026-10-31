@@ -225,14 +225,26 @@ async function getResultsByDate(date) {
   }
 }
 
-async function getLatestResult(date) {
+async function getLatestResult(date, upToSlot = null) {
   if (isPostgres) {
+    if (upToSlot) {
+      const res = await pgPool.query(
+        'SELECT * FROM results WHERE date = $1 AND slot_time <= $2 ORDER BY slot_time DESC LIMIT 1',
+        [date, upToSlot]
+      );
+      return res.rows[0] || null;
+    }
     const res = await pgPool.query(
       'SELECT * FROM results WHERE date = $1 ORDER BY slot_time DESC LIMIT 1',
       [date]
     );
     return res.rows[0] || null;
   } else {
+    if (upToSlot) {
+      return sqliteDb.prepare(
+        'SELECT * FROM results WHERE date = ? AND slot_time <= ? ORDER BY slot_time DESC LIMIT 1'
+      ).get(date, upToSlot) || null;
+    }
     return sqliteDb.prepare('SELECT * FROM results WHERE date = ? ORDER BY slot_time DESC LIMIT 1').get(date) || null;
   }
 }

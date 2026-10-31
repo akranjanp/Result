@@ -240,6 +240,14 @@
         fetchLiveResults();
       });
 
+      eventSource.addEventListener('slot_transition', (e) => {
+        fetchStatus();
+        fetchLiveResults();
+        if (allResultsModal.classList.contains('active')) {
+          fetchAllResults();
+        }
+      });
+
       eventSource.onerror = () => {
         liveStatusText.textContent = 'Reconnecting...';
       };
@@ -306,13 +314,20 @@
       const isActive = item.slotTime === activeSlot;
       const activeClass = isActive ? 'current-active' : '';
 
+      // Extra client-side safeguard: if slot is in the future for today, always show '--'
+      const isFuture = activeSlot && item.slotTime > activeSlot;
+      const c1 = isFuture ? '--' : (item.c1 || '--');
+      const c2 = isFuture ? '--' : (item.c2 || '--');
+      const c3 = isFuture ? '--' : (item.c3 || '--');
+      const c4 = isFuture ? '--' : (item.c4 || '--');
+
       html += `
         <tr class="slot-row ${activeClass}">
           <td class="slot-time-cell">${item.slotTime}</td>
-          <td>${item.c1}</td>
-          <td>${item.c2}</td>
-          <td>${item.c3}</td>
-          <td>${item.c4}</td>
+          <td>${c1}</td>
+          <td>${c2}</td>
+          <td>${c3}</td>
+          <td>${c4}</td>
         </tr>
       `;
     }

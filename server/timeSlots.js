@@ -116,11 +116,66 @@ function getDateStrings(date = new Date()) {
   };
 }
 
+/**
+ * Compares two 'HH:mm' time strings.
+ * Returns negative if slotA < slotB, 0 if equal, positive if slotA > slotB
+ */
+function compareSlots(slotA, slotB) {
+  if (!slotA || !slotB) return 0;
+  const [hA, mA] = slotA.split(':').map(Number);
+  const [hB, mB] = slotB.split(':').map(Number);
+  return (hA * 60 + mA) - (hB * 60 + mB);
+}
+
+/**
+ * Checks whether a given slotTime on a given date is in the future relative to current IST time.
+ * For today's date, slots strictly after current activeSlot are considered future.
+ */
+function isFutureSlot(slotTime, dateIso, now = new Date()) {
+  const todayIso = getDateStrings(now).iso;
+
+  // If the entire date is in the future, all slots are future
+  if (dateIso > todayIso) {
+    return true;
+  }
+  // If the date is in the past, all slots have already passed
+  if (dateIso < todayIso) {
+    return false;
+  }
+
+  // Today's date:
+  const ist = getISTParts(now);
+  const totalMin = ist.hours * 60 + ist.minutes;
+  const startMin = START_HOUR * 60 + START_MIN; // 08:30 (510 min)
+  const endMin = END_HOUR * 60 + END_MIN;       // 23:00 (1380 min)
+
+  // Before today's operating hours start (before 08:30 AM), all slots today are future
+  if (totalMin < startMin) {
+    return true;
+  }
+
+  // After operating hours end (after 23:00 PM), all slots today have concluded
+  if (totalMin > endMin) {
+    return false;
+  }
+
+  const activeSlot = getCurrentSlot(now);
+  if (!activeSlot) {
+    return true;
+  }
+
+  // Strictly after the current active slot
+  return compareSlots(slotTime, activeSlot) > 0;
+}
+
 module.exports = {
   getAllSlots,
   format12Hour,
   isWithinOperatingHours,
   getCurrentSlot,
   getDateStrings,
-  getISTParts
+  getISTParts,
+  compareSlots,
+  isFutureSlot
 };
+
