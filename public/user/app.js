@@ -101,7 +101,8 @@
 
       const data = await res.json();
       if (data.success) {
-        // Success: transition to Live Results screen
+        // Success: persist verified state in sessionStorage so scroll/refresh does not reset to captcha
+        try { sessionStorage.setItem('captcha_passed', '1'); } catch (e) {}
         captchaScreen.classList.remove('active');
         liveScreen.classList.add('active');
         initLiveScreen();
@@ -264,6 +265,7 @@
   });
 
   btnExitLive.addEventListener('click', () => {
+    try { sessionStorage.removeItem('captcha_passed'); } catch (e) {}
     liveScreen.classList.remove('active');
     captchaScreen.classList.add('active');
     loadCaptcha();
@@ -334,8 +336,19 @@
     allResultsTableBody.innerHTML = html;
   }
 
-  // Initialize on page load
-  loadCaptcha();
+  // Initialize on page load: restore verified session if already passed
+  let isSessionActive = false;
+  try {
+    isSessionActive = sessionStorage.getItem('captcha_passed') === '1';
+  } catch (e) {}
+
+  if (isSessionActive) {
+    captchaScreen.classList.remove('active');
+    liveScreen.classList.add('active');
+    initLiveScreen();
+  } else {
+    loadCaptcha();
+  }
 
   // Attempt silent landscape lock on supported mobile browsers
   try {

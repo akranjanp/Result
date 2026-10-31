@@ -477,6 +477,11 @@ body {
 .table-outer-wrapper {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
   border: 3px solid #735400;
   border-radius: 6px;
   background-color: #f7e699;

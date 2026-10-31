@@ -21,7 +21,6 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,7 +28,6 @@ public class MainActivity extends AppCompatActivity {
     public static final String SERVER_URL = "http://103.118.16.82:3000/";
 
     private WebView webView;
-    private SwipeRefreshLayout swipeRefresh;
     private ProgressBar progressBar;
     private LinearLayout errorLayout;
     private Button retryButton;
@@ -49,12 +47,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         webView = findViewById(R.id.webView);
-        swipeRefresh = findViewById(R.id.swipeRefresh);
         progressBar = findViewById(R.id.progressBar);
         errorLayout = findViewById(R.id.errorLayout);
         retryButton = findViewById(R.id.retryButton);
 
-        // Configure WebView settings
+        // Configure WebView settings for maximum performance and smooth touch scrolling
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -65,6 +62,12 @@ public class MainActivity extends AppCompatActivity {
         settings.setLoadWithOverviewMode(true);
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
+
+        // Enable hardware accelerated scrolling & disable overscroll bounce conflict
+        webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
+        webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        webView.setVerticalScrollBarEnabled(true);
+        webView.setHorizontalScrollBarEnabled(false);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
@@ -78,7 +81,6 @@ public class MainActivity extends AppCompatActivity {
                     progressBar.setProgress(newProgress);
                 } else {
                     progressBar.setVisibility(View.GONE);
-                    swipeRefresh.setRefreshing(false);
                 }
             }
         });
@@ -100,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 progressBar.setVisibility(View.GONE);
-                swipeRefresh.setRefreshing(false);
             }
 
             @Override
@@ -110,19 +111,7 @@ public class MainActivity extends AppCompatActivity {
                     webView.setVisibility(View.GONE);
                     errorLayout.setVisibility(View.VISIBLE);
                     progressBar.setVisibility(View.GONE);
-                    swipeRefresh.setRefreshing(false);
                 }
-            }
-        });
-
-        // Swipe to Refresh
-        swipeRefresh.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light);
-        swipeRefresh.setOnRefreshListener(() -> {
-            if (isNetworkAvailable()) {
-                webView.reload();
-            } else {
-                swipeRefresh.setRefreshing(false);
-                Toast.makeText(MainActivity.this, "No internet connection", Toast.LENGTH_SHORT).show();
             }
         });
 
